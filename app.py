@@ -7,9 +7,9 @@ import sqlite3
 st.set_page_config(page_title="Healthcare Patient Analytics", layout="wide")
 st.title("🏥 Healthcare Patient Analytics - LIVE")
 
-# 1. Create database automatically if missing
 db_path = "healthcare_db.sql"
 
+# Create the database automatically if missing
 def create_database_if_missing():
     if not os.path.exists(db_path):
         st.warning("Database not found. Creating a new one...")
@@ -31,12 +31,16 @@ def create_database_if_missing():
 
 create_database_if_missing()
 
-# 2. Load data from database
+# Load data from database
 conn = sqlite3.connect(db_path)
-df = pd.read_sql("SELECT * FROM Appointments", conn)
+try:
+    df = pd.read_sql("SELECT * FROM Appointments", conn)
+except Exception as e:
+    st.error(f"Error loading data: {e}")
+    st.stop()
 conn.close()
 
-# 3. Display metrics and charts
+# Display metrics and charts
 st.success("The app is running successfully with SQL data!")
 
 m1, m2, m3 = st.columns(3)
