@@ -10,28 +10,39 @@ st.set_page_config(page_title="HMO Optimization", layout="wide")
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 4rem;
-        padding-left: 10%;
-        padding-right: 10%;
+        padding-top: 3rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
+    
+    @media (min-width: 1024px) {
+        .block-container {
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+    }
+
     .main-title {
         text-align: center;
-        font-size: 2.2rem;
+        font-size: calc(1.5rem + 1vw);
         font-weight: bold;
         margin-bottom: 2rem;
         color: #1E1E1E;
     }
+
     [data-testid="stMetric"] {
         background-color: #ffffff;
-        padding: 15px;
+        padding: 10px;
         border-radius: 8px;
         border: 1px solid #eeeeee;
-        margin-top: 1rem;
+        margin-bottom: 10px;
     }
+
     .stButton>button {
-        width: 220px;
+        width: 100%;
+        max-width: 220px;
         border-radius: 6px;
-        height: 3em;
+        height: 3.5em;
         font-weight: bold;
         color: #ffffff;
         background-color: #007bff;
@@ -82,7 +93,7 @@ st.markdown('<div class="main-title">HMO Resource Optimization Engine</div>', un
 high_risk_total = f_df[f_df['Previous_NoShows'] >= 2]
 total_risks = len(high_risk_total)
 
-m1, m2, m3, m4 = st.columns(4)
+m1, m2, m3, m4 = st.columns([1,1,1,1])
 m1.metric("Total Apps", len(f_df))
 m2.metric("High-Risk", total_risks)
 m3.metric("Actioned", st.session_state.processed_count)
@@ -93,22 +104,22 @@ st.write("---")
 
 st.markdown("<h3 style='text-align: center;'>Risk Management Console</h3>", unsafe_allow_html=True)
 
-col_btn, col_tbl = st.columns([1.5, 3.5])
+col_btn, col_tbl = st.columns([1, 2])
 
 with col_btn:
-    st.write("Execute Transfer Protocol:")
+    st.write("Execute Protocol:")
     if st.button("Authorize Risk Transfer"):
         if st.session_state.processed_count < total_risks:
-            with st.spinner('Syncing with HMO Systems...'):
-                time.sleep(0.6)
+            with st.spinner('Syncing...'):
+                time.sleep(0.5)
                 st.session_state.processed_count += min(25, total_risks - st.session_state.processed_count)
                 st.balloons()
                 st.rerun()
 
     if st.session_state.processed_count > 0:
-        st.info(f"Protocol Active: {st.session_state.processed_count} Slots Processed")
+        st.info(f"Active: {st.session_state.processed_count}")
     else:
-        st.warning("Status: Awaiting HMO Authorization")
+        st.warning("Awaiting Approval")
 
 with col_tbl:
     risk_display = high_risk_total.head(6).astype(str)
