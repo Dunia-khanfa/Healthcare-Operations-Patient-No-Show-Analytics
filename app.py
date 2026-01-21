@@ -4,7 +4,21 @@ import numpy as np
 import plotly.express as px
 import os
 
-st.set_page_config(page_title="Patient Reliability System", layout="wide")
+st.set_page_config(page_title="HMO Resource Optimization", layout="wide")
+
+st.markdown("""
+    <style>
+    .block-container {
+        padding-top: 0.2rem;
+        padding-bottom: 0rem;
+    }
+    h1 {
+        margin-top: -3.5rem;
+        font-size: 2.5rem;
+        color: #1E1E1E;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def get_data():
     file_name = 'healthcare_data_advanced.csv'
@@ -40,7 +54,7 @@ mask = (df['Department'].isin(selected_dept)) & \
        (df['Age'].between(age_range[0], age_range[1]))
 f_df = df[mask].copy()
 
-st.markdown("<h1 style='text-align: center;'>Patient Reliability and Risk Scoring System</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>HMO Resource Optimization: Predictive Patient Reliability Engine</h1>", unsafe_allow_html=True)
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
