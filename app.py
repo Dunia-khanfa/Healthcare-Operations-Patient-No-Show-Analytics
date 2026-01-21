@@ -1,67 +1,35 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
-import sqlite3
+import os
 
-st.set_page_config(page_title="Healthcare Portal", layout="wide")
-st.title("🏥 Healthcare Analytics Portal")
+st.set_page_config(page_title="Healthcare Analytics", layout="wide")
+st.title("🏥 Healthcare Patient Analytics Portal")
 
-# This function creates the file and table if they are missing
-def startup_db():
-    conn = sqlite3.connect('healthcare_db.sql')
-    cursor = conn.cursor()
-    
-    # Using the SQL structure you provided
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS Patients (
-        PatientID INT PRIMARY KEY,
-        FullName VARCHAR(100),
-        Age INT,
-        City VARCHAR(50),
-        ChronicCondition BOOLEAN 
-    )''')
-    
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS Doctors (
-        DoctorID INT PRIMARY KEY,
-        DoctorName VARCHAR(100),
-        Department VARCHAR(50) 
-    )''')
-    
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS Appointments (
-        AppointmentID INT PRIMARY KEY,
-        PatientID INT,
-        DoctorID INT,
-        AppointmentDate DATE,
-        WaitTimeMinutes INT,
-        Status VARCHAR(20),
-        FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
-        FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
-    )''')
-    
-    # Adding one row so the table isn't empty
-    cursor.execute("INSERT OR IGNORE INTO Patients VALUES (1, 'System Test', 30, 'Local', 0)")
-    cursor.execute("INSERT OR IGNORE INTO Doctors VALUES (1, 'System Doctor', 'General')")
-    cursor.execute("INSERT OR IGNORE INTO Appointments VALUES (1, 1, 1, '2026-01-21', 0, 'Show')")
-    
-    conn.commit()
-    conn.close()
+# Check if the CSV file exists
+file_path = 'healthcare_appointments_large.csv'
 
-def load_data():
-    startup_db() # Run creation before loading
-    conn = sqlite3.connect('healthcare_db.sql')
-    try:
-        df = pd.read_sql("SELECT * FROM Appointments", conn)
-        return df
-    except Exception as e:
-        st.error(f"Database Error: {e}")
-        return None
-    finally:
-        conn.close()
-
-df = load_data()
-
-if df is not None:
-    st.success("Database is active")
-    st.write("Current Appointments in System:")
-    st.dataframe(df)
+if os.path.exists(file_path):
+    # Load the CSV data directly
+    df = pd.read_sql = pd.read_csv(file_path)
+    
+    st.success("Data loaded successfully from CSV!")
+    
+    # Metrics
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Appointments", len(df))
+    
+    if 'Status' in df.columns:
+        no_show_rate = (df['Status'] == 'No-Show').mean() * 100
+        col2.metric("No-Show Rate", f"{no_show_rate:.1f}%")
+    
+    # Show data
+    st.subheader("Recent Appointments")
+    st.dataframe(df.head(100))
+    
+    # Simple Chart
+    if 'Department' in df.columns:
+        st.subheader("Appointments by Department")
+        st.bar_chart(df['Department'].value_counts())
+else:
+    st.error(f"File not found: {file_path}")
+    st.info("Please run 'python generate_health_data.py' first to create the data.")
