@@ -4,14 +4,14 @@ CREATE TABLE Patients (
     FullName VARCHAR(100),
     Age INT,
     City VARCHAR(50),
-    ChronicCondition BOOLEAN -- האם יש מחלה כרונית (משפיע על הגעה)
+    ChronicCondition BOOLEAN 
 );
 
  2. 
 CREATE TABLE Doctors (
     DoctorID INT PRIMARY KEY,
     DoctorName VARCHAR(100),
-    Department VARCHAR(50) -- קרדיולוגיה, עיניים, משפחה וכו'
+    Department VARCHAR(50) 
 );
 
  3. 
@@ -20,7 +20,7 @@ CREATE TABLE Appointments (
     PatientID INT,
     DoctorID INT,
     AppointmentDate DATE,
-    WaitTimeMinutes INT, -- כמה זמן המטופל חיכה בפועל
+    WaitTimeMinutes INT,
     Status VARCHAR(20), -- 'Show', 'No-Show', 'Cancelled'
     FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
     FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
