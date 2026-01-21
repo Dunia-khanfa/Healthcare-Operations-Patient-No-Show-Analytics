@@ -12,7 +12,7 @@ def load_data():
         df = pd.read_sql(query, conn)
         return df
     except Exception as e:
-        st.error(f"Error: Table not found. Please run generate_health_data.py first. {e}")
+        st.error(f"Database Error: {e}")
         return None
     finally:
         conn.close()
@@ -32,9 +32,5 @@ if df is not None:
     if 'WaitTimeMinutes' in df.columns:
         col3.metric("Avg Wait Time", f"{df['WaitTimeMinutes'].mean():.1f} min")
 
-    st.subheader("Raw Data Preview")
+    st.subheader("Data Preview")
     st.dataframe(df.head(100))
-    
-    if 'Status' in df.columns:
-        st.subheader("Appointment Status Distribution")
-        st.bar_chart(df['Status'].value_counts())
