@@ -6,21 +6,27 @@ import os
 
 st.set_page_config(page_title="HMO Optimization", layout="wide")
 
+# עדכון ה-CSS לפתרון בעיית החיתוך והצפיפות
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 1rem;
+        padding-top: 4rem; /* הוספת ריווח משמעותי בחלק העליון */
         padding-left: 10%;
         padding-right: 10%;
     }
-    h1 {
-        margin-top: -1.5rem;
-        margin-bottom: 1rem;
-        font-size: 1.8rem !important;
+    .main-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: bold;
+        margin-bottom: 2rem; /* ריווח בין הכותרת לקוביות */
+        color: #1E1E1E;
     }
-    h3 {
-        font-size: 1.2rem !important;
-        margin-bottom: 0.5rem !important;
+    [data-testid="stMetric"] {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #eeeeee;
+        margin-top: 1rem; /* הורדת קוביות המספרים למטה */
     }
     .stButton>button {
         width: 140px;
@@ -28,21 +34,6 @@ st.markdown("""
         height: 2.5em;
         font-size: 0.9rem;
         background-color: #f8f9fb;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 1.4rem !important;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.8rem !important;
-    }
-    [data-testid="stMetric"] {
-        background-color: #ffffff;
-        padding: 5px 15px;
-        border-radius: 6px;
-        border: 1px solid #eeeeee;
-    }
-    div[data-testid="stExpander"] div[role="button"] p {
-        font-size: 0.8rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -72,6 +63,7 @@ def get_data():
 
 df = get_data()
 
+# סרגל צד למסננים
 st.sidebar.header("Filters")
 selected_dept = st.sidebar.multiselect("Depts:", options=sorted(df['Department'].unique()), default=df['Department'].unique())
 selected_gender = st.sidebar.multiselect("Gender:", options=df['Gender'].unique(), default=df['Gender'].unique())
@@ -84,11 +76,13 @@ mask = (df['Department'].isin(selected_dept)) & \
        (df['Age'].between(age_range[0], age_range[1]))
 f_df = df[mask].copy()
 
-st.markdown("<h1 style='text-align: center;'>HMO Resource Optimization Engine</h1>", unsafe_allow_html=True)
+# הצגת הכותרת באמצעות CSS מותאם כדי למנוע חיתוך
+st.markdown('<div class="main-title">HMO Resource Optimization Engine</div>', unsafe_allow_html=True)
 
 high_risk_total = f_df[f_df['Previous_NoShows'] >= 2]
 total_risks = len(high_risk_total)
 
+# קוביות מדדים מורדות למטה עם ריווח מוגדר
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Apps", len(f_df))
 m2.metric("High-Risk", total_risks)
@@ -100,7 +94,6 @@ st.write("---")
 
 st.markdown("<h3 style='text-align: center;'>Risk Management Console</h3>", unsafe_allow_html=True)
 
-# מבנה ממוקד יותר
 col_btn, col_tbl = st.columns([1, 4])
 
 with col_btn:
