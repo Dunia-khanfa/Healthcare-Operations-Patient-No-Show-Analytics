@@ -9,16 +9,19 @@ st.set_page_config(page_title="HMO Resource Optimization", layout="wide")
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.2rem;
+        padding-top: 2rem;
         padding-bottom: 0rem;
     }
     h1 {
-        margin-top: -3.5rem;
+        margin-top: -1rem;
         font-size: 2.5rem;
         color: #1E1E1E;
     }
     </style>
     """, unsafe_allow_html=True)
+
+if 'reallocated' not in st.session_state:
+    st.session_state.reallocated = False
 
 def get_data():
     file_name = 'healthcare_data_advanced.csv'
@@ -56,13 +59,15 @@ f_df = df[mask].copy()
 
 st.markdown("<h1 style='text-align: center;'>HMO Resource Optimization: Predictive Patient Reliability Engine</h1>", unsafe_allow_html=True)
 
+high_risk_df = f_df[f_df['Previous_NoShows'] >= 2]
+current_reallocated = len(high_risk_df) if st.session_state.reallocated else 0
+efficiency_val = (len(high_risk_df) / len(f_df) * 100) if (len(f_df) > 0 and st.session_state.reallocated) else 0
+
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
-high_risk_df = f_df[f_df['Previous_NoShows'] >= 2]
 m2.metric("High-Risk Profiles", len(high_risk_df))
-efficiency = (len(high_risk_df) / len(f_df) * 100) if len(f_df) > 0 else 0
-m3.metric("Ready for Action", len(high_risk_df))
-m4.metric("Potential Efficiency", f"+{efficiency:.1f}%")
+m3.metric("Actioned Slots", current_reallocated)
+m4.metric("Efficiency Gain", f"+{efficiency_val:.1f}%")
 
 st.write("---")
 
@@ -71,8 +76,9 @@ c_act, c_tbl = st.columns([1, 2])
 
 with c_act:
     if st.button("Flag for Reallocation"):
+        st.session_state.reallocated = True
         st.success(f"Flagged {len(high_risk_df)} slots.")
-        st.balloons()
+        st.rerun()
 
 with c_tbl:
     risk_display = high_risk_df[['AppointmentID', 'Department', 'Previous_NoShows', 'WaitTimeDays']].head(10).astype(str)
