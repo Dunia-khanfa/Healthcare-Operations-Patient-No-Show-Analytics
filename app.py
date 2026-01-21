@@ -9,19 +9,34 @@ st.set_page_config(page_title="HMO Resource Optimization", layout="wide")
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 0rem;
+        padding-top: 1.5rem;
+        padding-left: 5rem;
+        padding-right: 5rem;
     }
     h1 {
         margin-top: -1rem;
-        font-size: 2.5rem;
-        color: #1E1E1E;
+        margin-bottom: 2rem;
+        font-size: 2.8rem;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        height: 3.5em;
+        font-weight: bold;
+        background-color: #f8f9fb;
+        border: 1px solid #d1d5db;
+    }
+    [data-testid="stMetric"] {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     </style>
     """, unsafe_allow_html=True)
 
-if 'reallocated' not in st.session_state:
-    st.session_state.reallocated = False
+if 'processed_count' not in st.session_state:
+    st.session_state.processed_count = 0
 
 def get_data():
     file_name = 'healthcare_data_advanced.csv'
@@ -59,37 +74,51 @@ f_df = df[mask].copy()
 
 st.markdown("<h1 style='text-align: center;'>HMO Resource Optimization: Predictive Patient Reliability Engine</h1>", unsafe_allow_html=True)
 
-high_risk_df = f_df[f_df['Previous_NoShows'] >= 2]
-current_reallocated = len(high_risk_df) if st.session_state.reallocated else 0
-efficiency_val = (len(high_risk_df) / len(f_df) * 100) if (len(f_df) > 0 and st.session_state.reallocated) else 0
+high_risk_total = f_df[f_df['Previous_NoShows'] >= 2]
+total_risks = len(high_risk_total)
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
-m2.metric("High-Risk Profiles", len(high_risk_df))
-m3.metric("Actioned Slots", current_reallocated)
-m4.metric("Efficiency Gain", f"+{efficiency_val:.1f}%")
+m2.metric("High-Risk Profiles", total_risks)
+m3.metric("Actioned by HMO", st.session_state.processed_count)
+eff_gain = (st.session_state.processed_count / len(f_df) * 100) if len(f_df) > 0 else 0
+m4.metric("Efficiency Gain", f"+{eff_gain:.1f}%")
 
+st.write("")
 st.write("---")
+st.write("")
 
-st.markdown("<h3 style='text-align: center;'>Risk Flagging for HMO Review</h3>", unsafe_allow_html=True)
-c_act, c_tbl = st.columns([1, 2])
+st.markdown("<h3 style='text-align: center; margin-bottom: 1.5rem;'>Risk Flagging & Case Management</h3>", unsafe_allow_html=True)
 
-with c_act:
-    if st.button("Flag for Reallocation"):
-        st.session_state.reallocated = True
-        st.success(f"Flagged {len(high_risk_df)} slots.")
-        st.rerun()
+# שימוש בעמודות עם יחס מרווח יותר למניעת דחיסות
+col_btn, spacer, col_tbl = st.columns([1.2, 0.3, 3.5])
 
-with c_tbl:
-    risk_display = high_risk_df[['AppointmentID', 'Department', 'Previous_NoShows', 'WaitTimeDays']].head(10).astype(str)
-    st.dataframe(risk_display, use_container_width=True, hide_index=True)
+with col_btn:
+    st.write("Process the next batch for review:")
+    if st.button("Flag Next 25 Cases"):
+        if st.session_state.processed_count < total_risks:
+            st.session_state.processed_count += min(25, total_risks - st.session_state.processed_count)
+            st.rerun()
+    
+    st.write("")
+    if st.session_state.processed_count > 0:
+        st.info(f"Currently monitoring {st.session_state.processed_count} flagged slots.")
+    else:
+        st.warning("No cases flagged for action yet.")
 
+with col_tbl:
+    risk_display = high_risk_total.head(10).astype(str)
+    st.dataframe(risk_display[['AppointmentID', 'Department', 'Previous_NoShows', 'WaitTimeDays']], use_container_width=True, hide_index=True)
+
+st.write("")
 st.write("---")
+st.write("")
 
-st.markdown("<h3 style='text-align: center;'>HMO Operational Risk Heatmap</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; margin-bottom: 1rem;'>HMO Operational Risk Heatmap</h3>", unsafe_allow_html=True)
 f_df['Age_Bin'] = pd.cut(f_df['Age'], bins=[0, 20, 40, 60, 80, 100], labels=['0-20', '21-40', '41-60', '61-80', '81+'])
 heat_data = f_df[f_df['Status'] == 'No-Show'].groupby(['Department', 'Age_Bin'], observed=False).size().reset_index(name='NoShows')
 fig_heat = px.density_heatmap(heat_data, x='Age_Bin', y='Department', z='NoShows', color_continuous_scale='Reds', template='plotly_white')
+fig_heat.update_layout(margin=dict(l=20, r=20, t=20, b=20))
 st.plotly_chart(fig_heat, use_container_width=True)
 
 st.write("---")
