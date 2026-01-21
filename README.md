@@ -1,1 +1,29 @@
-HMO Resource Optimization: Predictive Patient Reliability EngineExecutive SummaryThis system is a decision-support dashboard designed for Health Maintenance Organizations (HMOs) to minimize financial and operational losses caused by patient no-shows. By identifying high-risk profiles and allowing for controlled slot reallocation, the engine transforms unpredictable scheduling into an optimized, data-driven workflow.Core ModulesDynamic Risk Assessment: Filters and identifies patients with 2 or more previous no-shows as "High-Risk," providing a targeted list for medical staff review.Strategic Risk Density Analysis (Heatmap): Visualizes the concentration of missed appointments by department and age group. This allows managers to detect behavioral patterns and allocate additional reminders to specific demographics.Authorized Transfer Protocol: Features a batch-processing mechanism ("Authorize Risk Transfer") that updates HMO efficiency metrics in real-time, simulating a professional administrative approval process.Responsive Operational Design: The interface is fully adaptive, ensuring left-aligned data clarity and usability on both high-resolution desktop monitors and mobile devices.Efficiency Logic & Mathematical FoundationTo provide actionable insights, the system calculates the Potential Efficiency Gain using the following logic:$$Efficiency Gain = \left( \frac{\text{Total Actioned Slots}}{\text{Total Scheduled Appointments}} \right) \times 100$$Total Apps: The total volume of scheduled appointments within the filtered criteria.Actioned Slots: The specific number of high-risk appointments that the HMO has authorized for transfer or closer monitoring.Impact: Every "Actioned Slot" represents a recovered opportunity to provide care to a waiting patient, directly reducing clinic idle time.Impact MetricsEfficiency Gain Tracking: Live calculation of potential clinic efficiency improvements based on the percentage of risky slots successfully managed.Data Integrity: Implements automated string-formatting for all database displays to ensure 100% left-alignment and professional UI standards.Deployment InstructionsEnvironment Setup: Install Python 3.9+ and the required dependencies:pip install streamlit pandas numpy plotlyExecution: Launch the engine via the Command Prompt:python -m streamlit run app.py
+# **HMO Resource Optimization: Predictive Patient Reliability Engine**
+
+### **Executive Summary**
+This system is a decision-support dashboard designed for Health Maintenance Organizations (HMOs) to minimize financial and operational losses caused by patient no-shows. By identifying high-risk profiles and allowing for controlled slot reallocation, the engine transforms unpredictable scheduling into an optimized, data-driven workflow.
+
+### **Core Modules**
+* **Dynamic Risk Assessment**: Filters and identifies patients with 2 or more previous no-shows as "High-Risk," providing a targeted list for medical staff review.
+* **Strategic Risk Density Analysis**: Visualizes the concentration of missed appointments by department and age group. This allows managers to detect behavioral patterns and allocate additional resources to specific demographics.
+* **Authorized Transfer Protocol**: Features a batch-processing mechanism ("Authorize Risk Transfer") that updates HMO efficiency metrics in real-time, simulating a professional administrative approval process.
+* **Responsive Operational Design**: The interface is fully adaptive, ensuring data clarity and usability on both high-resolution desktop monitors and mobile devices.
+
+### **Efficiency Logic & Mathematical Foundation**
+To provide actionable insights, the system calculates the **Potential Efficiency Gain** using the following logic:
+
+$$Efficiency Gain = \left( \frac{\text{Total Actioned Slots}}{\text{Total Scheduled Appointments}} \right) \times 100$$
+
+* **Total Apps**: The total volume of scheduled appointments within the filtered criteria.
+* **Actioned Slots**: The specific number of high-risk appointments that the HMO has authorized for transfer or closer monitoring.
+* **Impact**: Every "Actioned Slot" represents a recovered opportunity to provide care to a waiting patient, directly reducing clinic idle time.
+
+### **Impact Metrics**
+* **Efficiency Gain Tracking**: Live calculation of potential clinic efficiency improvements based on the percentage of risky slots successfully managed.
+* **Data Integrity**: Implements automated string-formatting for all database displays to ensure 100% left-alignment and professional UI standards.
+
+### **Deployment Instructions**
+1. **Environment Setup**: Install Python 3.9+ and the required dependencies:
+   `pip install streamlit pandas numpy plotly`
+2. **Execution**: Launch the engine via the Command Prompt:
+   `python -m streamlit run app.py`
