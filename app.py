@@ -10,27 +10,30 @@ st.markdown("""
     <style>
     .block-container {
         padding-top: 1.5rem;
-        padding-left: 5rem;
-        padding-right: 5rem;
+        padding-left: 3rem;
+        padding-right: 3rem;
     }
     h1 {
-        margin-top: -1rem;
-        margin-bottom: 2rem;
-        font-size: 2.8rem;
+        margin-top: -1.2rem;
+        margin-bottom: 1.5rem;
+        font-size: 2.1rem;
     }
     .stButton>button {
         width: 100%;
         border-radius: 8px;
-        height: 3.5em;
+        height: 3em;
         font-weight: bold;
         background-color: #f8f9fb;
         border: 1px solid #d1d5db;
     }
+    [data-testid="stMetricValue"] {
+        font-size: 1.8rem !important;
+    }
     [data-testid="stMetric"] {
         background-color: #ffffff;
-        padding: 15px;
+        padding: 10px;
         border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -84,44 +87,34 @@ m3.metric("Actioned by HMO", st.session_state.processed_count)
 eff_gain = (st.session_state.processed_count / len(f_df) * 100) if len(f_df) > 0 else 0
 m4.metric("Efficiency Gain", f"+{eff_gain:.1f}%")
 
-st.write("")
 st.write("---")
-st.write("")
 
-st.markdown("<h3 style='text-align: center; margin-bottom: 1.5rem;'>Risk Flagging & Case Management</h3>", unsafe_allow_html=True)
-
-# שימוש בעמודות עם יחס מרווח יותר למניעת דחיסות
-col_btn, spacer, col_tbl = st.columns([1.2, 0.3, 3.5])
+col_btn, spacer, col_tbl = st.columns([1, 0.2, 3.8])
 
 with col_btn:
-    st.write("Process the next batch for review:")
+    st.write("Batch Processing:")
     if st.button("Flag Next 25 Cases"):
         if st.session_state.processed_count < total_risks:
             st.session_state.processed_count += min(25, total_risks - st.session_state.processed_count)
             st.rerun()
     
-    st.write("")
     if st.session_state.processed_count > 0:
-        st.info(f"Currently monitoring {st.session_state.processed_count} flagged slots.")
+        st.info(f"Monitoring {st.session_state.processed_count} slots.")
     else:
-        st.warning("No cases flagged for action yet.")
+        st.warning("Awaiting action.")
 
 with col_tbl:
-    risk_display = high_risk_total.head(10).astype(str)
+    risk_display = high_risk_total.head(8).astype(str)
     st.dataframe(risk_display[['AppointmentID', 'Department', 'Previous_NoShows', 'WaitTimeDays']], use_container_width=True, hide_index=True)
 
-st.write("")
 st.write("---")
-st.write("")
 
-st.markdown("<h3 style='text-align: center; margin-bottom: 1rem;'>HMO Operational Risk Heatmap</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; font-size: 1.5rem;'>HMO Operational Risk Heatmap</h3>", unsafe_allow_html=True)
 f_df['Age_Bin'] = pd.cut(f_df['Age'], bins=[0, 20, 40, 60, 80, 100], labels=['0-20', '21-40', '41-60', '61-80', '81+'])
 heat_data = f_df[f_df['Status'] == 'No-Show'].groupby(['Department', 'Age_Bin'], observed=False).size().reset_index(name='NoShows')
 fig_heat = px.density_heatmap(heat_data, x='Age_Bin', y='Department', z='NoShows', color_continuous_scale='Reds', template='plotly_white')
-fig_heat.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+fig_heat.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10))
 st.plotly_chart(fig_heat, use_container_width=True)
 
 st.write("---")
-
-st.markdown("<h3 style='text-align: center;'>Full Patient Reliability Database</h3>", unsafe_allow_html=True)
 st.dataframe(f_df.reset_index(drop=True).astype(str), use_container_width=True, hide_index=True)
