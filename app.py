@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 import os
 
-st.set_page_config(page_title="Advanced Patient Analytics", layout="wide")
+st.set_page_config(page_title="Healthcare Operations Analytics", layout="wide")
 
 def get_data():
     file_name = 'healthcare_data_final.csv'
@@ -27,7 +27,7 @@ def get_data():
 
 df = get_data()
 
-st.sidebar.header("📊 Filter Dashboard")
+st.sidebar.header("Filter Dashboard")
 selected_dept = st.sidebar.multiselect("Select Departments:", options=sorted(df['Department'].unique()), default=df['Department'].unique())
 age_range = st.sidebar.slider("Age Range:", 0, 100, (0, 100))
 selected_insurance = st.sidebar.radio("Insurance Type:", options=['All', 'Private', 'Public', 'None'], horizontal=True)
@@ -37,8 +37,8 @@ if selected_insurance != 'All':
     mask &= (df['Insurance'] == selected_insurance)
 f_df = df[mask]
 
-st.title("🏥 Healthcare Operations & Patient Analytics")
-st.markdown(f"**Live Statistics for {len(f_df)} appointments**")
+st.title("Healthcare Operations and Patient Analytics")
+st.markdown(f"Analysis of {len(f_df)} appointment records")
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
@@ -51,7 +51,7 @@ st.write("---")
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.subheader("📊 Appointment Status by Department")
+    st.subheader("Appointment Status by Department")
     fig_dept = px.histogram(f_df, x="Department", color="Status", 
                             barmode="group",
                             template="plotly_white",
@@ -60,8 +60,8 @@ with col_left:
     st.plotly_chart(fig_dept, use_container_width=True)
 
 with col_right:
-    st.subheader("📈 Attendance Rate by Age Group")
-    f_df['AgeGroup'] = pd.cut(f_df['Age'], bins=[0, 18, 40, 65, 100], labels=['Kids', 'Young Adults', 'Middle Aged', 'Seniors'])
+    st.subheader("Attendance Rate by Age Group")
+    f_df['AgeGroup'] = pd.cut(f_df['Age'], bins=[0, 18, 40, 65, 100], labels=['Youth', 'Young Adult', 'Adult', 'Senior'])
     age_data = f_df.groupby(['AgeGroup', 'Status'], observed=False).size().reset_index(name='count')
     fig_age = px.bar(age_data, x="AgeGroup", y="count", color="Status", 
                      barmode="stack", template="plotly_white")
@@ -73,15 +73,15 @@ st.write("---")
 c1, c2 = st.columns([2, 1])
 
 with c1:
-    st.subheader("⏳ Wait Time Distribution & Impact")
+    st.subheader("Wait Time Distribution")
     fig_wait = px.area(f_df.groupby('WaitTimeDays').size().reset_index(name='Volume'), 
-                       x='WaitTimeDays', y='Volume', title="Appointment Volume Over Wait Duration")
+                       x='WaitTimeDays', y='Volume')
     st.plotly_chart(fig_wait, use_container_width=True)
 
 with c2:
-    st.subheader("💳 Insurance Split")
-    fig_pie = px.pie(f_df, names='Insurance', hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+    st.subheader("Insurance Distribution")
+    fig_pie = px.pie(f_df, names='Insurance', hole=0.4, color_discrete_sequence=px.colors.qualitative.Safe)
     st.plotly_chart(fig_pie, use_container_width=True)
 
-with st.expander("📂 Access Raw Patient Database"):
+with st.expander("View Raw Data Source"):
     st.dataframe(f_df, use_container_width=True)
