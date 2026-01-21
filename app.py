@@ -42,7 +42,7 @@ st.markdown(f"**Live Statistics for {len(f_df)} appointments**")
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
-m2.metric("No-Show Rate", f"{(f_df['Status']=='No-Show').mean()*100:.1f}%", help="Percentage of patients who missed their appointment")
+m2.metric("No-Show Rate", f"{(f_df['Status']=='No-Show').mean()*100:.1f}%")
 m3.metric("Average Patient Age", int(f_df['Age'].mean()))
 m4.metric("Avg Wait Time", f"{f_df['WaitTimeDays'].mean():.1f} Days")
 
