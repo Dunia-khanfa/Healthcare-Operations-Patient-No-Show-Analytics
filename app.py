@@ -5,11 +5,12 @@ import sqlite3
 st.set_page_config(page_title="Healthcare Portal", layout="wide")
 st.title("🏥 Healthcare Analytics Portal")
 
-def initialize_database():
+# This function creates the file and table if they are missing
+def startup_db():
     conn = sqlite3.connect('healthcare_db.sql')
     cursor = conn.cursor()
     
-    # Create tables based on the SQL you provided
+    # Using the SQL structure you provided
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Patients (
         PatientID INT PRIMARY KEY,
@@ -38,18 +39,16 @@ def initialize_database():
         FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
     )''')
     
-    # Check if data exists, if not, insert one sample row so it won't be empty
-    cursor.execute("SELECT count(*) FROM Appointments")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT OR IGNORE INTO Patients VALUES (1, 'Test Patient', 30, 'Tel Aviv', 0)")
-        cursor.execute("INSERT OR IGNORE INTO Doctors VALUES (1, 'Dr. Smith', 'Cardiology')")
-        cursor.execute("INSERT OR IGNORE INTO Appointments VALUES (1, 1, 1, '2026-01-21', 15, 'Show')")
+    # Adding one row so the table isn't empty
+    cursor.execute("INSERT OR IGNORE INTO Patients VALUES (1, 'System Test', 30, 'Local', 0)")
+    cursor.execute("INSERT OR IGNORE INTO Doctors VALUES (1, 'System Doctor', 'General')")
+    cursor.execute("INSERT OR IGNORE INTO Appointments VALUES (1, 1, 1, '2026-01-21', 0, 'Show')")
     
     conn.commit()
     conn.close()
 
 def load_data():
-    initialize_database()
+    startup_db() # Run creation before loading
     conn = sqlite3.connect('healthcare_db.sql')
     try:
         df = pd.read_sql("SELECT * FROM Appointments", conn)
@@ -63,6 +62,6 @@ def load_data():
 df = load_data()
 
 if df is not None:
-    st.success("System is Live")
-    st.metric("Total Appointments", len(df))
+    st.success("Database is active")
+    st.write("Current Appointments in System:")
     st.dataframe(df)
