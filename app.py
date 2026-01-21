@@ -28,7 +28,6 @@ def get_data():
 
 df = get_data()
 
-# --- Sidebar Filters ---
 st.sidebar.header("System Filters")
 selected_dept = st.sidebar.multiselect("Departments:", options=sorted(df['Department'].unique()), default=df['Department'].unique())
 selected_gender = st.sidebar.multiselect("Gender:", options=df['Gender'].unique(), default=df['Gender'].unique())
@@ -41,50 +40,39 @@ mask = (df['Department'].isin(selected_dept)) & \
        (df['Age'].between(age_range[0], age_range[1]))
 f_df = df[mask].copy()
 
-# --- Header ---
 st.markdown("<h1 style='text-align: center;'>Patient Reliability and Risk Scoring System</h1>", unsafe_allow_html=True)
 
-# --- KPIs (המספרים והאחוזים פה משתנים אוטומטית לפי המסננים) ---
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Appointments", len(f_df))
-
-high_risk_patients = f_df[f_df['Previous_NoShows'] >= 2]
-m2.metric("High-Risk Profiles", len(high_risk_patients))
-
-# חישוב דינמי של אחוז ההתייעלות
-efficiency = (len(high_risk_patients) / len(f_df) * 100) if len(f_df) > 0 else 0
-m3.metric("Ready for Transfer", len(high_risk_patients))
+high_risk_df = f_df[f_df['Previous_NoShows'] >= 2]
+m2.metric("High-Risk Profiles", len(high_risk_df))
+efficiency = (len(high_risk_df) / len(f_df) * 100) if len(f_df) > 0 else 0
+m3.metric("Ready for Action", len(high_risk_df))
 m4.metric("Potential Efficiency", f"+{efficiency:.1f}%")
 
 st.write("---")
 
-# --- Risk Analysis Section ---
-st.markdown("<h3 style='text-align: center;'>Risk Flagging for HMO Action</h3>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>The system identifies slots for transfer. Final reallocation to be performed by HMO providers.</p>", unsafe_allow_html=True)
-
+st.markdown("<h3 style='text-align: center;'>Risk Flagging for HMO Review</h3>", unsafe_allow_html=True)
 c_act, c_tbl = st.columns([1, 2])
 
 with c_act:
-    st.write("Click to flag high-risk records for the medical center's review.")
     if st.button("Flag for Reallocation"):
-        st.success(f"Successfully flagged {len(high_risk_patients)} slots for HMO action.")
+        st.success(f"Flagged {len(high_risk_df)} slots.")
         st.balloons()
 
 with c_tbl:
-    # יצירת טבלה עם יישור ברירת מחדל (שמאל) שעובד תמיד
-    risk_list = high_risk_patients.head(10).copy()
-    risk_list['Action_Required'] = "HMO Transfer Ready"
-    
-    # הצגת הטבלה הממורכזת ויזואלית אך עם יישור פנימי לשמאל
-    st.dataframe(
-        risk_list[['AppointmentID', 'Department', 'Previous_NoShows', 'Action_Required']], 
-        use_container_width=True, 
-        hide_index=True
-    )
+    risk_display = high_risk_df[['AppointmentID', 'Department', 'Previous_NoShows', 'WaitTimeDays']].head(10).astype(str)
+    st.dataframe(risk_display, use_container_width=True, hide_index=True)
 
 st.write("---")
 
-# --- Database ---
+st.markdown("<h3 style='text-align: center;'>HMO Operational Risk Heatmap</h3>", unsafe_allow_html=True)
+f_df['Age_Bin'] = pd.cut(f_df['Age'], bins=[0, 20, 40, 60, 80, 100], labels=['0-20', '21-40', '41-60', '61-80', '81+'])
+heat_data = f_df[f_df['Status'] == 'No-Show'].groupby(['Department', 'Age_Bin'], observed=False).size().reset_index(name='NoShows')
+fig_heat = px.density_heatmap(heat_data, x='Age_Bin', y='Department', z='NoShows', color_continuous_scale='Reds', template='plotly_white')
+st.plotly_chart(fig_heat, use_container_width=True)
+
+st.write("---")
+
 st.markdown("<h3 style='text-align: center;'>Full Patient Reliability Database</h3>", unsafe_allow_html=True)
-# יישור סטנדרטי לשמאל שמונע שגיאות אדומות
-st.dataframe(f_df.reset_index(drop=True), use_container_width=True, hide_index=True)
+st.dataframe(f_df.reset_index(drop=True).astype(str), use_container_width=True, hide_index=True)
